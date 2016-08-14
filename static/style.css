@@ -1,0 +1,25 @@
+.imgBorder img {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+  -moz-box-shadow: 0 1px 2px rgba(34,25,25,0.4);
+  -webkit-box-shadow: 0 1px 3px rgba(34, 25, 25, 0.4);
+}
+
+ul { list-style: outside none none; }
+h4 { margin-top:0; margin-left:30px; margin-bottom:10px; text-align: left}
+#largeSpan h4 { text-align: center}
+#dirs { float : left }
+#input { float : right; width: 100px ; border: 1px solid #dddddd;}
+#dirs > ul { float: left; width: 600px; margin: 0; font-size: 13px; padding-left: 20px}
+#dirs h4 span { font-size:12px; cursor:pointer }
+#dirs > ul > li { margin-top: 6px; margin-left: 5px;  } 
+li { float: left; border: 1px solid #dddddd; margin-left: 2px; margin-top: 1px; 
+     cursor: pointer}
+a{ text-decorate: none; color: black}
+.hover > span{ color: blue}
+.select > span{ color: blue}
+#largeSpan { float: left; }
+#help { float: left; margin-left: 30px; margin-top: 45px; }
+#large { position: relative; z-index: 10; cursor: pointer}
+
+#imgSpan { position: relative; z-index: 5}
