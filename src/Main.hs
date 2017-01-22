@@ -209,7 +209,7 @@ main = do
   unless (length a == 2) $ do
     putStrLn "usage:\n\n\tmemis [source folder] [target folder]"
     exitFailure
-  let [t,s] = a
+  let [s,t] = a
   printf "Source: %s\nTarget: %s\nhttp://localhost:%d\n" s t port
   run port
     . logStdoutDev

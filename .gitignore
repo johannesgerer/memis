@@ -30,3 +30,4 @@ cabal.sandbox.config
 dist
 distcore.*
 core.*
+.stack-work
