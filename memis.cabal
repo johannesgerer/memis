@@ -1,17 +1,24 @@
 name:                memis
-version:             0.1.0.0
+version:             0.1.1
 synopsis:            Memis Efficient Manual Image Sorting
 -- description:         
 homepage:            http://johannesgerer.com/memis
 license:             MIT
 license-file:        LICENSE
-author:              Johannes Gere
-maintainer:          oss@johannesgerer.com
--- copyright:           
+author:              Johannes Gerer
+Maintainer:          Johannes Gerer <oss@johannesgerer.com>
 category:            Data
 build-type:          Simple
--- extra-source-files:  
 cabal-version:       >=1.10
+description:
+   Memis allows to efficiently rename and sort image files into directories, via an intelligent web-interface.
+
+   .
+   See <https://github.com/johannesgerer/memis Readme> on Github.
+
+Extra-source-files:
+                   README.md
+                   stack.yaml
 
 executable memis
   main-is:             Main.hs

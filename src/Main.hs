@@ -4,6 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
+import           Control.Arrow
 import qualified Control.Exception as E
 import           Control.Monad
 import           Control.Monad.Trans.Class
@@ -38,15 +39,16 @@ import           Text.Blaze.Html.Renderer.Utf8
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Printf
+import           Text.Read (readEither)
 import           Text.Regex
 import           Text.Regex.TDFA
 import           Web.Frank
 import           Web.Simple hiding (hoistEither,body)
-                 
+
 port = 8081 :: Int
 targetD = "/home/data/schriftverkehr/aktuell"
 sourceD = "/home/data/schriftverkehr/Unsortiert"
-       
+
 javascript x = H.script H.! A.src x $ mempty
 stylesheet x = H.link H.! A.rel "stylesheet" H.! A.type_ "text/css" H.! A.href x
 
@@ -72,7 +74,9 @@ app2 target source = controllerApp () $ do
     (params,_) <- parseForm
     let a = either (\x -> error $ "decode failed: " ++ x) id
           $ eitherDecodeStrict' $ lookupJust "imgs" params :: [Action]
-    respond . okHtml . mconcat . fmap L.fromString  =<< lift (mapM ($ (target,source)) a)
+        runIt x = E.handle (\e-> return $ show (e::E.SomeException)) $
+                  x (target,source)
+    respond . okHtml . mconcat . fmap L.fromString  =<< lift (mapM runIt a)
   get "/mkdir" $ do
     name :: String  <- queryParam' "name"
     resp <- lift $ E.handle
@@ -87,23 +91,28 @@ type Action = (String,String) -> IO String
 instance FromJSON Action where
   parseJSON (Object v) = do
     old <- v .: "id"
-    let fileO = takeFileName old 
-        convertDate "delete" = "delete_" ++ fileO
-        convertDate s = (++ takeExtension old) . intercalate "-" . fmap form  . reverse . splitOn "." $ s
-        form d = printf "%02i" (readNote (show v) d :: Int)
-    file <- maybe fileO convertDate <$> v .:? "date"
+    let fileO = takeFileName old
+        convertDate "delete" = Right $ "delete_" ++ fileO
+        convertDate s = (++ takeExtension old) . intercalate "-"
+          <$> mapM form  (reverse . splitOn "." $ s)
+        form d = printf "%02i" <$> left (printf "date '%s': %s" d :: String -> String)
+          (readEither d :: Either String Int)
+    file <- maybe (Right fileO) convertDate <$> v .:? "date"
     dir <- maybe (return $ takeDirectory old) (.: "id") =<< v .:? "dir"
     angle <- v .:? "angle"
     return $ \(target,source) -> do
       msg <- rotate old angle
-      return . (msg ++) =<< if dir </> file == old then return "" else do
-        new <- (dir </>) <$> getUnusedFilename [target,source] file
-        exis <- doesFileExist new 
-        when (exis || not (target `isPrefixOf` new || source `isPrefixOf` new)) $
-          error $ "something went wrong: " ++ show (old,dir,file,new)
-        -- E.handle (\e-> print (e::E.SomeException)) $
-        renameFile old new
-        return $ printf "%s -> %s\n" old new
+      let rename f = if dir </> f == old then return "" else do
+            new <- (dir </>) <$> getUnusedFilename [target,source] f
+            exis <- doesFileExist new
+            when (exis || not (target `isPrefixOf` new || source `isPrefixOf` new)) $
+              error $ "something went wrong: " ++ show (old,dir,f,new)
+            renameFile old new
+            return $ printf "%s -> %s\n" old new
+          rename :: String -> IO String
+      return . (msg ++) =<< do
+        either (return . printf "Error handling %s: %s\n" old) rename file
+
 
 
 rotate :: String -> Maybe Int -> IO String
@@ -113,7 +122,7 @@ rotate f (Just angle) = g <$> readProcessWithExitCode
   where g (ExitSuccess,_,_) = printf "Rotated by %s by %d degrees\n" f angle
         g (_,_,err) = err
 
-          
+
 getUnusedFilename dirs f = do
   l <- concat <$> forM dirs (find always $ fileType ==? RegularFile)
   return . r . succ . headDef 0 . sortBy (flip compare) . (g =<<) $ l
@@ -138,7 +147,7 @@ body dirs script =renderHtml $ H.docTypeHtml $ do
     javascript "//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"
     H.script script
     javascript "script.js"
-  H.body $ do 
+  H.body $ do
     H.span  H.! A.id "largeSpan" $ do
       H.div ""
       H.span H.! A.id "input" $ ""
@@ -167,13 +176,13 @@ body dirs script =renderHtml $ H.docTypeHtml $ do
         ]
     H.span  H.! A.id "help" $ do
       H.h4 $ H.a H.! A.href "?" H.! A.onclick "return applyChanges();" $ "Apply changes"
-        
+
 defContentType p = mimeByExt defaultMimeMap defaultMimeType $ T.pack p
-  
+
 file p = responseFile
   status200 [("Content-Type", defContentType p)]
   p Nothing
-  
+
 
 a' =~? b = do
   a <- a'
@@ -187,7 +196,7 @@ toH d = H.ul $ forM_ d $ \(T x cs) ->
   H.li H.! A.id (fromString x) $ do
     H.span $ H.string $ takeFileName x
     toH cs
-  
+
 getDirs dir = do
     cs <- filter (/= dir) . sort
       <$> find (depth ==? 0) (fileType ==? Directory) dir
@@ -201,7 +210,7 @@ images dir = filter (/= dir) . sort
 data T = T { tP :: FilePath,
              tC :: [T]} deriving Show
 
-  
+
 main :: IO ()
 main = do
   a <- getArgs
