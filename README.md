@@ -1,4 +1,4 @@
-# memis: efficient manual image sorting [![Build Status](https://travis-ci.org/johannesgerer/memis.svg?branch=master)](https://travis-ci.org/johannesgerer/memis)
+# memis: efficient manual image sorting [![Build Status](https://travis-ci.org/johannesgerer/memis.svg?branch=master)](https://travis-ci.org/johannesgerer/memis) [![Hackage](https://img.shields.io/hackage/v/Lykah.svg)](https://hackage.haskell.org/package/Lykah)
 
 *memis* is a little tool written in Haskell. It allows to efficiently
 rename and sort image files into directories, via an intelligent  web-interface.
