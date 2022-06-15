@@ -65,7 +65,7 @@ app2 target source = controllerApp () $ do
     size :: Maybe String <- queryParam "size"
     let scale size = do
           (_,stdout,_) <- lift $ readCreateProcessWithExitCode
-            (proc "/usr/bin/convert" [f,"-filter","Lagrange"
+            (proc "convert" [f,"-filter","Lagrange"
                                      ,"-resize",size,"-"]) ""
           respond $ ok (defContentType f) stdout
     if source `isPrefixOf` f then maybe (respond $ file f) scale size
@@ -118,7 +118,7 @@ instance FromJSON Action where
 rotate :: String -> Maybe Int -> IO String
 rotate _ Nothing = pure ""
 rotate f (Just angle) = g <$> readProcessWithExitCode
-  "/usr/bin/gm" ["mogrify","-rotate", show angle, f] ""
+  "gm" ["mogrify","-rotate", show angle, f] ""
   where g (ExitSuccess,_,_) = printf "Rotated by %s by %d degrees\n" f angle
         g (_,_,err) = err
 

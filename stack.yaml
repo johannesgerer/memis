@@ -1,4 +1,5 @@
-resolver: lts-7.16
+#resolver: lts-7.16
+resolver: nightly-2021-12-10
 packages:
 - '.'
 pvp-bounds: both
