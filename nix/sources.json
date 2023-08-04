@@ -1,5 +1,17 @@
 {
-    "nixpkgs": {
+     "all-cabal-hashes": {
+        "branch": "hackage",
+        "description": "A repository containing all cabal files, with added metadata for package hashes",
+        "homepage": null,
+        "owner": "commercialhaskell",
+        "repo": "all-cabal-hashes",
+        "rev": "0c48e77c8491d4440b94e61f596cca9125d9153f",
+        "sha256": "13nzlgs7k0kfr5x2if5rr9mvl34sybaifpx4jmpyq5mll32ivqdi",
+        "type": "tarball",
+        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/0c48e77c8491d4440b94e61f596cca9125d9153f.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+   "nixpkgs": {
         "branch": "nixos-unstable",
         "description": "Nix Packages collection",
         "homepage": null,

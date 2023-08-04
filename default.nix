@@ -1,13 +1,11 @@
 # -*- compile-command: "nix-shell --run 'cabal exec -- ghc-pkg list'"; -*-
-let cabalHashes = self: super: {
-      all-cabal-hashes = super.fetchurl {
-        url = "https://github.com/commercialhaskell/all-cabal-hashes/archive/ef065b55b68cd8a66da14319420f1d01bb849d96.tar.gz";
-        sha256 = "sha256-cxUbv6/NyCBdbinTS9R6QupgvMuNtui7eFSsWyAX0qQ=";
-      };};
-in { pkgs ? import (import ./nix/sources.nix {}).nixpkgs { overlays = [cabalHashes]; },
-     sources ? import ./nix/sources.nix {} }:
+{ sources ? import ./nix/sources.nix {}, pkgs ? null }:
   # https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/haskell-modules/make-package-set.nix
-pkgs.haskellPackages.developPackage {
+let pkgs2 = if pkgs != null then pkgs else import sources.nixpkgs { overlays = [cabalHashes]; }; 
+    cabalHashes = self: super: { inherit (sources) all-cabal-hashes; };
+in
+let pkgs = pkgs2;
+in pkgs.haskellPackages.developPackage {
     root = ./.;
     withHoogle = false;
     returnShellEnv = false;
