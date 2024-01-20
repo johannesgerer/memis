@@ -105,8 +105,12 @@ instance FromJSON Action where
       let rename f = if dir </> f == old then return "" else do
             new <- (dir </>) <$> getUnusedFilename [target,source] f
             exis <- doesFileExist new
-            when (exis || not (target `isPrefixOf` new || source `isPrefixOf` new)) $
-              error $ "something went wrong: " ++ show (old,dir,f,new)
+            when exis $ error $ new ++ " exists allready.\n(old, dir, f, new) = " ++ show (old,dir,f,new)
+            let a = target `isPrefixOf` new
+                b = source `isPrefixOf` new
+            when (not $ a || b) $
+              error $ "target `isPrefixOf` new: " ++ show a ++ "\nsource `isPrefixOf` new: " ++ show b
+              ++ "\n(old, dir, f, new) = " ++ show (old,dir,f,new)
             renameFile old new
             return $ printf "%s -> %s\n" old new
           rename :: String -> IO String
@@ -124,7 +128,7 @@ rotate f (Just angle) = g <$> readProcessWithExitCode
 
 
 getUnusedFilename dirs f = do
-  l <- concat <$> forM dirs (find always $ fileType ==? RegularFile)
+  l <- concat <$> forM dirs (find always always)
   return . r . succ . headDef 0 . sortBy (flip compare) . (g =<<) $ l
   where core [] = [takeBaseName f, "" , takeExtension f]
         core x = tail x

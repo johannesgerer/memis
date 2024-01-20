@@ -236,7 +236,8 @@ function applyChanges(){
 		// console.log(imgs);
 		$.post('apply',{ 'imgs' : JSON.stringify(imgs)},function(data){
 				$('body').empty().append($('<pre>').html(data));
-				$('body').prepend("<a href='?'>reload page<a/>");
+		  $('body').prepend(`<a onclick='return applyChanges();' href='?'>retry<a/>
+                                    <br><a href='?'>reload page<a/>`);
 		});
 		return false;
 }
